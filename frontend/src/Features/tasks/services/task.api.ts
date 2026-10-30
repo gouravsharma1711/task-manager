@@ -13,7 +13,6 @@ export interface CreateTaskDto {
 }
 
 export const taskApi = {
-  // Fetch tasks with optional status and category filters
   async getTasks(filters?: TaskFilterParams): Promise<Task[]> {
     const params: Record<string, string> = {};
     if (filters?.status && filters.status !== 'All') {
@@ -24,6 +23,7 @@ export const taskApi = {
     }
 
     const response = await apiClient.get('/tasks', { params });
+    
     return response.data.data;
   },
 

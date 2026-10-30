@@ -4,7 +4,6 @@ import { taskApi, type CreateTaskDto, type TaskFilterParams } from '../services/
 export const useTasks = () => {
   const { tasks, setTasks, isLoading, setIsLoading, error, setError } = useTaskStore();
 
-  // Load tasks with optional filters from the backend
   const fetchTasks = async (filters?: TaskFilterParams) => {
     setIsLoading(true);
     setError(null);

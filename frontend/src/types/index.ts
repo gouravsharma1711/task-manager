@@ -27,7 +27,6 @@ export interface TaskStats {
 export interface HealthStatus {
   server: 'healthy' | 'unhealthy' | 'checking';
   database: 'connected' | 'disconnected' | 'checking';
-  uptimeSeconds?: number;
   timestamp: string;
   version?: string;
 }

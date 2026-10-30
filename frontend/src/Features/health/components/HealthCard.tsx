@@ -8,12 +8,12 @@ export const HealthCard: React.FC = () => {
   const isServerHealthy = health?.server === 'healthy';
   const isDbConnected = health?.database === 'connected';
 
-  const formatUptime = (seconds?: number) => {
-    if (!seconds) return '1h 00m';
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${mins}m`;
-  };
+  // const formatUptime = (seconds?: number) => {
+  //   if (!seconds) return '1h 00m';
+  //   const hours = Math.floor(seconds / 3600);
+  //   const mins = Math.floor((seconds % 3600) / 60);
+  //   return `${hours}h ${mins}m`;
+  // };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -157,7 +157,6 @@ export const HealthCard: React.FC = () => {
     data: {
       server: health?.server || 'unknown',
       database: health?.database || 'unknown',
-      uptime: formatUptime(health?.uptimeSeconds),
       timestamp: health?.timestamp,
     },
     success: isServerHealthy && isDbConnected,
