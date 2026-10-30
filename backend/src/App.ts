@@ -9,7 +9,9 @@ const app = express();
 // middlewares
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
-app.use(cors())
+app.use(cors({
+    origin:'*'
+}))
 
 // task router
 app.use('/api/v1',taskRouter)
