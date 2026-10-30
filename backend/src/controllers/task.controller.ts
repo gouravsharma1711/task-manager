@@ -7,6 +7,7 @@ import type { CreateTaskBody } from "../Types/type.js";
 import mongoose from "mongoose";
 
 const validCategories = ["Development", "Design", "Marketing"];
+const validStatus = ["Pending","Completed"]
 
 const createTask = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -59,20 +60,44 @@ const createTask = asyncHandler(
 });
 
 const getAllTasks = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-
     const { status, category } = req.query;
 
-    const filter:Record<string,string> = {};
+    const filter: Record<string, string> = {};
 
-    if(status) filter.status = status as string;
+    if (status !== undefined && status !== "") {
+      
+      if (
+        typeof status !== "string" ||
+        !["Pending", "Completed"].includes(status.trim())
+      ) {
+        throw new ApiError(
+          400,
+          "Status must be either Pending or Completed",
+        );
+      }
 
-    if(category) filter.category = category as string;
+      filter.status = status.trim();
+    }
 
-    const tasks = await Task.find(filter)
-    
+    if (category !== undefined && category!=="") {
+      if (
+        typeof category !== "string" ||
+        !["Development", "Design", "Marketing"].includes(category.trim())
+      ) {
+        throw new ApiError(
+          400,
+          "Category must be Development, Design, or Marketing",
+        );
+      }
+
+      filter.category = category.trim();
+    }
+
+    const tasks = await Task.find(filter);
+
     res.status(200).json(
-        new ApiResponse(200,"All Tasks Fetched Successfully",tasks)
-    )
+      new ApiResponse(200, "Tasks fetched successfully", tasks),
+    );
 });
 
 
@@ -94,7 +119,7 @@ const toggleTask = asyncHandler(async (req: Request, res: Response): Promise<voi
     }
 
     task.status = task.status === "Pending" ? "Completed": "Pending";
-    task.save()
+    await task.save()
 
     res.status(200).json(
         new ApiResponse(200,"Task status updated successfully",task)
@@ -126,30 +151,51 @@ const deleteTask = asyncHandler(async (req: Request, res: Response): Promise<voi
 });
 
 const getHealth = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    res.status(200).json(
-      new ApiResponse(200, "Server is healthy")
+    const databaseConnected = mongoose.connection.readyState === 1;
+    const statusCode = databaseConnected ? 200 : 503;
+    const message = databaseConnected
+      ? "Server and database are healthy"
+      : "Database is unavailable";
+
+    res.status(statusCode).json(
+      new ApiResponse(statusCode, message, {
+        server: "healthy",
+        database: databaseConnected ? "connected" : "disconnected",
+      }),
     );
 });
 
 const getStats = asyncHandler( async (req: Request, res: Response): Promise<void> => {
-    const totalTasks = await Task.countDocuments();
-    const completedTasks = await Task.countDocuments({
-      status: "Completed",
-    });
-    const pendingTasks = await Task.countDocuments({
-      status: "Pending",
-    });
+    const [
+      totalTasks,
+      completedTasks,
+      pendingTasks,
+      developmentTasks,
+      designTasks,
+      marketingTasks,
+    ] = await Promise.all([
+      Task.countDocuments(),
+      Task.countDocuments({ status: "Completed" }),
+      Task.countDocuments({ status: "Pending" }),
+      Task.countDocuments({ category: "Development" }),
+      Task.countDocuments({ category: "Design" }),
+      Task.countDocuments({ category: "Marketing" }),
+    ]);
 
-    const completionPercentage =
-      totalTasks === 0
-        ? 0
-        : Math.round((completedTasks / totalTasks) * 100);
+    const completionPercentage = totalTasks === 0
+      ? 0
+      : Math.round((completedTasks / totalTasks) * 100);
 
     const stats = {
       totalTasks,
       completedTasks,
       pendingTasks,
       completionPercentage,
+      categoryCounts: {
+        Development: developmentTasks,
+        Design: designTasks,
+        Marketing: marketingTasks,
+      },
     };
 
     res.status(200).json(
@@ -160,7 +206,6 @@ const getStats = asyncHandler( async (req: Request, res: Response): Promise<void
 export {
   createTask,
   getAllTasks,
-  getTask,
   toggleTask,
   deleteTask,
   getHealth,
