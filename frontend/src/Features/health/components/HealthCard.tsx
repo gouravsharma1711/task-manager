@@ -8,13 +8,6 @@ export const HealthCard: React.FC = () => {
   const isServerHealthy = health?.server === 'healthy';
   const isDbConnected = health?.database === 'connected';
 
-  // const formatUptime = (seconds?: number) => {
-  //   if (!seconds) return '1h 00m';
-  //   const hours = Math.floor(seconds / 3600);
-  //   const mins = Math.floor((seconds % 3600) / 60);
-  //   return `${hours}h ${mins}m`;
-  // };
-
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Banner */}
@@ -157,7 +150,18 @@ export const HealthCard: React.FC = () => {
     data: {
       server: health?.server || 'unknown',
       database: health?.database || 'unknown',
-      timestamp: health?.timestamp,
+      timestamp: health?.timestamp ? new Date(
+        health.timestamp).toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      })
+      : undefined,
     },
     success: isServerHealthy && isDbConnected,
   },
