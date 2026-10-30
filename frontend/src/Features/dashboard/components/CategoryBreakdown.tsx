@@ -1,6 +1,6 @@
 import React from 'react';
 import { Code, Palette, Megaphone } from 'lucide-react';
-import type { TaskCategory } from '../../types';
+import type { TaskCategory } from '../../../types';
 
 interface CategoryBreakdownProps {
   categoryCounts: {

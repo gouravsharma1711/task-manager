@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { PlusCircle, AlertCircle, Check } from 'lucide-react';
-import type { TaskCategory } from '../../types';
-import { useTasks } from '../../context/TaskContext';
+import type { TaskCategory } from '../../../types';
+import { useTasks } from '../hooks/useTasks';
 
 interface TaskFormProps {
   onSuccess?: () => void;
 }
 
 export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
-  const { createTask } = useTasks();
+  const { addTask } = useTasks();
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<TaskCategory>('Development');
   const [description, setDescription] = useState('');
@@ -20,17 +20,17 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
     e.preventDefault();
     setError(null);
 
-    // Front-end validation: check for empty or whitespace-only title
+    // Frontend validation: reject empty or whitespace-only title
     if (!title.trim()) {
       setError('Task title is required and cannot be empty.');
       return;
     }
 
     setIsSubmitting(true);
-    const result = await createTask({
-      title,
+    const result = await addTask({
+      title: title.trim(),
       category,
-      description,
+      description: description.trim() || undefined,
     });
     setIsSubmitting(false);
 
@@ -39,7 +39,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
       return;
     }
 
-    // Reset form
+    // Reset form upon success
     setTitle('');
     setDescription('');
     setCategory('Development');
@@ -52,24 +52,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-xs">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200/80 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">Create New Task</h2>
+          <h2 className="text-sm sm:text-base font-semibold text-slate-900">Create New Task</h2>
           <p className="text-xs text-slate-500">
             Add task details to assign to your team
           </p>
         </div>
         {showSuccessToast && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all animate-fade-in">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 transition-all self-start sm:self-auto">
             <Check className="w-3.5 h-3.5" />
             Task added!
           </span>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Error message */}
+      <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 text-xs rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -77,8 +76,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Title Input */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
           <div className="sm:col-span-2">
             <label
               htmlFor="task-title"
@@ -95,7 +93,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
                 setTitle(e.target.value);
                 if (error) setError(null);
               }}
-              className={`w-full px-3.5 py-2 text-sm rounded-lg border bg-white focus:outline-none focus:ring-2 transition ${
+              className={`w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border bg-white focus:outline-none focus:ring-2 transition ${
                 error
                   ? 'border-rose-300 focus:ring-rose-200'
                   : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-100'
@@ -103,7 +101,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
             />
           </div>
 
-          {/* Category Dropdown */}
           <div>
             <label
               htmlFor="task-category"
@@ -115,7 +112,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
               id="task-category"
               value={category}
               onChange={(e) => setCategory(e.target.value as TaskCategory)}
-              className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-100 transition"
+              className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-100 transition"
             >
               <option value="Development">Development</option>
               <option value="Design">Design</option>
@@ -124,7 +121,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
           </div>
         </div>
 
-        {/* Description Textarea */}
         <div>
           <label
             htmlFor="task-description"
@@ -138,22 +134,22 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSuccess }) => {
             placeholder="Add relevant acceptance criteria, links, or context..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-100 transition resize-none"
+            className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:border-indigo-500 focus:ring-indigo-100 transition resize-none"
           />
         </div>
 
-        {/* Submit Button */}
         <div className="flex justify-end pt-1">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-lg text-white bg-slate-900 hover:bg-slate-800 active:scale-98 transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg text-white bg-slate-900 hover:bg-slate-800 active:scale-98 transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>{isSubmitting ? 'Adding Task...' : 'Create Task'}</span>
+            <span>{isSubmitting ? 'Creating...' : 'Create Task'}</span>
           </button>
         </div>
       </form>
     </div>
   );
 };
+
